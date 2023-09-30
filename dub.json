@@ -1,0 +1,19 @@
+{
+	"name": "objc",
+	"description": "Static bindings to Apple's Objective C runtime.",
+	"authors": ["Aya Partridge"],
+	"license": "BSL-1.0",
+	
+	"targetType": "staticLibrary",
+	"targetPath": "lib",
+	
+	"configurations": [
+		{
+			"name": "static",
+		},
+		{
+			"name": "staticBC",
+			"buildOptions": ["betterC"],
+		}
+	],
+}
