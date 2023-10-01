@@ -1,6 +1,6 @@
 {
 	"name": "objc",
-	"description": "Static bindings to Apple's Objective C runtime.",
+	"description": "Static bindings to Apple's Objective C runtime, compatible with BetterC, @nogc and nothrow.",
 	"authors": ["Aya Partridge"],
 	"license": "BSL-1.0",
 	

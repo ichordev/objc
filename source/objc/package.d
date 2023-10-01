@@ -5,9 +5,6 @@ public import
 	objc.nsobject,
 	objc.runtime;
 
-///A UDA for optional Objective-C class methods.
-enum optional;
-
 ///An opaque type that represents an Objective-C class.
 struct objc_class;
 alias Class = objc_class*;
@@ -90,3 +87,35 @@ This was changed for safety, because it was observed that many of the callers of
 extern(C) SEL sel_getUid(const(char)* str) nothrow @nogc;
 
 alias objc_objectptr_t = const(void)*;
+
+///Determines which Apple platforms something is available for
+struct available{
+	double macos, ios, macCatalyst, tvos, watchos;
+}
+alias Nullable(T) = T; ///For pointers that may be null
+alias NonNull(T) = T;///For pointers that shall not be null
+enum optional; ///For optionally implemented methods
+
+enum makeClass = (string iden, string[2][] args, string[] inherit=[q{NSObject!()}], string body=q{}){
+	string argList, argPass;
+	if(args.length){
+		foreach(arg; args[0..$-1]){
+			argList ~= arg[0]~" "~arg[1]~", ";
+			argPass ~= arg[1]~", ";
+		}
+		auto arg = args[$-1];
+		argList ~= arg[0]~" "~arg[1];
+		argPass ~= arg[1];
+	}
+	
+	string ret = "mixin template Inter_"~iden~"("~argList~"){";
+	foreach(i; inherit)
+		ret ~= "\n\tmixin "~(i.length<6 || i[0..6] == "Proto_" ? i : "Inter_"~i)~";";
+	ret ~= "@property auto "~iden~"() => cast(."~iden~"*)&this;";
+	ret ~= body;
+	ret ~= "}";
+	ret ~= "\nstruct "~iden~(args.length ? "("~argList~"){" : "{");
+	ret ~= "\n\tmixin Inter_"~iden~"!("~argPass~");";
+	ret ~= "\n}";
+	return ret;
+};

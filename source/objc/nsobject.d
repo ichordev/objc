@@ -2,58 +2,59 @@ module objc.nsobject;
 
 import objc;
 
+struct _NSZone;
+
 struct NSString;
 struct NSMethodSignature;
 struct NSInvocation;
 
 mixin template Proto_NSObject(){
+	alias instancetype = typeof(this)*;
+	@disable this(ref typeof(this));
 	
-	mixin (makeMemberFn(q{bool}, q{isEqual},`:`, q{id object}));
-	@property mixin(makeStaticMemberFn(q{NSUInteger}, q{hash},``, q{}));
+	mixin(makeMethod(q{bool}, q{isEqual},`:`, q{id object}));
+	mixin(makeMethod(q{NSUInteger}, q{hash},``, q{}));
 	
-	@property mixin(makeStaticMemberFn(q{Class}, q{superclass},``, q{}));
+	mixin(makeStaticMethod(q{Class}, q{superclass},``, q{}));
 	
-	mixin(makeMemberFn(q{bool}, q{isProxy},``, q{}));
+	mixin(makeMethod(q{bool}, q{isProxy},``, q{}));
 	
-	mixin(makeStaticMemberFn(q{bool}, q{isKindOfClass},`:`, q{Class aClass}));
-	mixin(makeStaticMemberFn(q{bool}, q{isMemberOfClass},`:`, q{Class aClass}));
-	mixin(makeStaticMemberFn(q{bool}, q{conformsToProtocol},`:`, q{Protocol* protocol}));
+	mixin(makeStaticMethod(q{bool}, q{isKindOfClass},`:`, q{Class aClass}));
+	mixin(makeStaticMethod(q{bool}, q{isMemberOfClass},`:`, q{Class aClass}));
+	mixin(makeStaticMethod(q{bool}, q{conformsToProtocol},`:`, q{Protocol* protocol}));
 
-	mixin(makeStaticMemberFn(q{bool}, q{respondsToSelector},`:`, q{SEL aSelector}));
+	mixin(makeStaticMethod(q{bool}, q{respondsToSelector},`:`, q{SEL aSelector}));
 	
-	@property mixin(makeStaticMemberFn(q{NSString*}, q{description},``, q{}));
+	@property mixin(makeStaticMethod(q{NSString*}, q{description},``, q{}));
 	//@optional @property (readonly, copy) NSString *debugDescription;
 }
 
-mixin template Inter_NSObject(){
-	mixin Proto_NSObject!();
-	
+mixin(makeClass(q{NSObject},[], [q{Proto_NSObject!()}], q{
 	deprecated Class isa;
 	
-	mixin(makeStaticMemberFn(q{void}, q{load},``, q{}));
+	mixin(makeStaticMethod(q{void}, q{load},``, q{}));
 	
-	mixin(makeStaticMemberFn(q{void}, q{initialize},``, q{}));
+	mixin(makeStaticMethod(q{void}, q{initialize},``, q{}));
 	alias initialise = initialize;
-	mixin(makeMemberFn(q{typeof(this)}, q{init},``, q{}));
+	mixin(makeMethod(q{instancetype}, q{init},``, q{}));
 	
-	//mixin(makeStaticMemberFn(q{typeof(this)}, q{new_}, `new`, q{})) OBJC_SWIFT_UNAVAILABLE("use object initializers instead");
-	//mixin(makeStaticMemberFn(q{typeof(this)}, q{allocWithZone},`:`, q{_NSZone* zone})) OBJC_SWIFT_UNAVAILABLE("use object initializers instead");
-	//mixin(makeStaticMemberFn(q{typeof(this)}, q{alloc},``, q{})) OBJC_SWIFT_UNAVAILABLE("use object initializers instead");
-	//- (void)dealloc OBJC_SWIFT_UNAVAILABLE("use 'deinit' to define a de-initializer");
+	mixin(makeStaticMethod(q{instancetype}, q{new_}, `new`, q{}));
+	mixin(makeStaticMethod(q{instancetype}, q{allocWithZone},`:`, q{_NSZone* zone}));
+	mixin(makeStaticMethod(q{instancetype}, q{alloc},``, q{}));
+	mixin(makeMethod(q{void}, q{dealloc},``, q{}));
 	
-	mixin(makeMemberFn(q{id}, q{copy},``, q{}));
-	mixin(makeMemberFn(q{id}, q{mutableCopy},``, q{}));
+	mixin(makeMethod(q{id}, q{copy},``, q{}));
+	mixin(makeMethod(q{id}, q{mutableCopy},``, q{}));
 	
 	
-	mixin(makeStaticMemberFn(q{bool}, q{instancesRespondToSelector},`:`, q{SEL aSelector}));
-	mixin(makeMemberFn(q{void}, q{doesNotRecognizeSelector},`:`, q{SEL aSelector}));
+	mixin(makeStaticMethod(q{bool}, q{instancesRespondToSelector},`:`, q{SEL aSelector}));
+	mixin(makeMethod(q{void}, q{doesNotRecognizeSelector},`:`, q{SEL aSelector}));
 	alias doesNotRecogniseSelector = doesNotRecognizeSelector;
 	
-	//- (void)forwardInvocation:(NSInvocation *)anInvocation OBJC_SWIFT_UNAVAILABLE("");
+	//- (void)forwardInvocation:(NSInvocation *)anInvocation;
 	
-	mixin(makeStaticMemberFn(q{bool}, q{isSubclassOfClass},`:`, q{Class aClass}));
+	mixin(makeStaticMethod(q{bool}, q{isSubclassOfClass},`:`, q{Class aClass}));
 	
-	mixin(makeStaticMemberFn(q{bool}, q{resolveClassMethod},`:`, q{SEL sel}));
-	mixin(makeStaticMemberFn(q{bool}, q{resolveInstanceMethod},`:`, q{SEL sel}));
-	
-}
+	mixin(makeStaticMethod(q{bool}, q{resolveClassMethod},`:`, q{SEL sel}));
+	mixin(makeStaticMethod(q{bool}, q{resolveInstanceMethod},`:`, q{SEL sel}));
+}));

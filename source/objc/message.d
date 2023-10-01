@@ -199,31 +199,50 @@ version(AArch64){
 	extern(C) void _objc_msgForward_stret(id receiver, SEL sel, ...) nothrow @nogc;
 }
 
-enum makeMemberFn = (string retnType, string iden, string sel, string args){
+enum makeMethod = (string retnType, string iden, string sel, string args){
 	string sendFn = (){
 		if(retnType[$-1] == '*') return "objc_msgSend";
 		if(retnType == "float" || retnType == "double" || retnType == "real") return "msgSendFloatRet!"~retnType;
 		return "objc_msgSend_stret";
 	}();
+	
 	string ret = retnType~" "~iden~"("~args~") nothrow @nogc{";
-	ret ~= "\n\talias _Fn = extern(C) "~retnType~" function(id, SEL, "~args~") nothrow @nogc;";
-	ret ~= retnType == "void" ? "\n\t" : "\n\treturn ";
-	ret ~= "(cast(_Fn)"~sendFn~")(&this, getSEL!`"~sel~"`, __traits(parameters));";
+	ret ~= "\n\talias _Fn = extern(C) "~retnType~" function(typeof(this)*, SEL, "~args~") nothrow @nogc;";
+	ret ~= (retnType == "void" ? "\n\t" : "\n\treturn ") ~ "(cast(_Fn)&"~sendFn~")(&this, getSEL!`"~sel~"`, __traits(parameters));";
 	ret ~= "\n}";
 	return ret;
 };
 
-enum makeStaticMemberFn = (string retnType, string iden, string sel, string args){
+enum makeStaticMethod = (string retnType, string iden, string sel, string args){
 	string sendFn = (){
 		if(retnType[$-1] == '*') return "objc_msgSend";
 		if(retnType=="float" || retnType=="double" || retnType=="real") return "msgSendFloatRet!"~retnType;
 		return "objc_msgSend_stret";
 	}();
 	sel = sel.length && sel[0] != ':' ? sel : iden~sel;
+	
 	string ret = "static "~retnType~" "~iden~"("~args~") nothrow @nogc{";
 	ret ~= "\n\talias _Fn = extern(C) "~retnType~" function(Class, SEL, "~args~") nothrow @nogc;";
-	ret ~= retnType == "void" ? "\n\t" : "\n\treturn ";
-	ret ~= "(cast(_Fn)"~sendFn~")(getClass!__traits(identifier, typeof(this)), getSEL!`"~sel~"`, __traits(parameters));";
+	ret ~= (retnType == "void" ? "\n\t" : "\n\treturn ") ~ "(cast(_Fn)&"~sendFn~")(getClass!(__traits(identifier, typeof(this))), getSEL!`"~sel~"`, __traits(parameters));";
+	ret ~= "\n}";
+	return ret;
+};
+
+enum makeProperty = (string type, string iden){
+	string setSendFn = (){
+		if(type[$-1] == '*') return "objc_msgSend";
+		if(type=="float" || type=="double" || type=="real") return "msgSendFloatRet!"~type;
+		return "objc_msgSend_stret";
+	}();
+	string setSel = "set" ~ (iden[0]>='a' && iden[0]<='z' ? cast(char)(iden[0]-('a'-'A')) : iden[0]) ~ iden[1..$] ~ ':';
+	
+	string ret = "@property "~type~" "~iden~"() nothrow @nogc{";
+	ret ~= "\n\talias _Fn = extern(C) "~type~" function(typeof(this)*, SEL) nothrow @nogc;";
+	ret ~= "\n\treturn (cast(_Fn)&objc_msgSend)(&this, getSEL!`"~iden~"`);";
+	ret ~= "\n}";
+	ret ~= "\n@property void "~iden~"("~type~" val) nothrow @nogc{";
+	ret ~= "\n\talias _Fn = extern(C) void function(typeof(this)*, SEL, "~type~") nothrow @nogc;";
+	ret ~= "\n\treturn (cast(_Fn)&"~setSendFn~")(&this, getSEL!`"~setSel~"`, val);";
 	ret ~= "\n}";
 	return ret;
 };
