@@ -4,6 +4,8 @@ import objc;
 
 struct _NSZone;
 
+//TODO: Implement these properly elsewhere
+struct NSError;
 struct NSString;
 struct NSMethodSignature;
 struct NSInvocation;

@@ -88,7 +88,10 @@ extern(C) SEL sel_getUid(const(char)* str) nothrow @nogc;
 
 alias objc_objectptr_t = const(void)*;
 
-///Determines which Apple platforms something is available for
+/**
+Specifies the lowest version of each Apple platform that an API component is available for.
+`double,init` means they're unavailable on any version of that platform.
+*/
 struct available{
 	double macos, ios, macCatalyst, tvos, watchos;
 }
@@ -111,7 +114,7 @@ enum makeClass = (string iden, string[2][] args, string[] inherit=[q{NSObject!()
 	string ret = "mixin template Inter_"~iden~"("~argList~"){";
 	foreach(i; inherit)
 		ret ~= "\n\tmixin "~(i.length<6 || i[0..6] == "Proto_" ? i : "Inter_"~i)~";";
-	ret ~= "@property auto "~iden~"() => cast(."~iden~"*)&this;";
+	ret ~= "@property auto as"~iden~"() => cast("~iden~"*)&this;";
 	ret ~= body;
 	ret ~= "}";
 	ret ~= "\nstruct "~iden~(args.length ? "("~argList~"){" : "{");
