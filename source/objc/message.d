@@ -205,6 +205,7 @@ enum makeMethod = (string retnType, string iden, string sel, string args){
 		if(retnType == "float" || retnType == "double" || retnType == "real") return "msgSendFloatRet!"~retnType;
 		return "objc_msgSend_stret";
 	}();
+	sel = sel.length && sel[0] != ':' ? sel : iden~sel;
 	
 	string ret = retnType~" "~iden~"("~args~") nothrow @nogc{";
 	ret ~= "\n\talias _Fn = extern(C) "~retnType~" function(typeof(this)*, SEL, "~args~") nothrow @nogc;";

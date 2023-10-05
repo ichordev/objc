@@ -4,11 +4,14 @@ import objc;
 
 struct _NSZone;
 
-//TODO: Implement these properly elsewhere
+//TODO: Implement these properly in CoreFoundation…
 struct NSError;
 struct NSString;
+struct NSMutableString;
 struct NSMethodSignature;
 struct NSInvocation;
+struct NSNull;
+//------------------------------------------------
 
 mixin template Proto_NSObject(){
 	alias instancetype = typeof(this)*;
@@ -27,7 +30,7 @@ mixin template Proto_NSObject(){
 
 	mixin(makeStaticMethod(q{bool}, q{respondsToSelector},`:`, q{SEL aSelector}));
 	
-	@property mixin(makeStaticMethod(q{NSString*}, q{description},``, q{}));
+	mixin(makeStaticMethod(q{NSString*}, q{description},``, q{}));
 	//@optional @property (readonly, copy) NSString *debugDescription;
 }
 
@@ -38,7 +41,7 @@ mixin(makeClass(q{NSObject},[], [q{Proto_NSObject!()}], q{
 	
 	mixin(makeStaticMethod(q{void}, q{initialize},``, q{}));
 	alias initialise = initialize;
-	mixin(makeMethod(q{instancetype}, q{init},``, q{}));
+	mixin(makeMethod(q{instancetype}, q{ini}, `init`, q{}));
 	
 	mixin(makeStaticMethod(q{instancetype}, q{new_}, `new`, q{}));
 	mixin(makeStaticMethod(q{instancetype}, q{allocWithZone},`:`, q{_NSZone* zone}));
@@ -53,10 +56,12 @@ mixin(makeClass(q{NSObject},[], [q{Proto_NSObject!()}], q{
 	mixin(makeMethod(q{void}, q{doesNotRecognizeSelector},`:`, q{SEL aSelector}));
 	alias doesNotRecogniseSelector = doesNotRecognizeSelector;
 	
-	//- (void)forwardInvocation:(NSInvocation *)anInvocation;
+	mixin(makeMethod(q{void}, q{forwardInvocation},`:`, q{NSInvocation* anInvocation}));
 	
 	mixin(makeStaticMethod(q{bool}, q{isSubclassOfClass},`:`, q{Class aClass}));
 	
-	mixin(makeStaticMethod(q{bool}, q{resolveClassMethod},`:`, q{SEL sel}));
-	mixin(makeStaticMethod(q{bool}, q{resolveInstanceMethod},`:`, q{SEL sel}));
+	@available(macos: 10.5, ios: 2.0, tvos: 9.0, watchos: 1.0){
+		mixin(makeStaticMethod(q{bool}, q{resolveClassMethod},`:`, q{SEL sel}));
+		mixin(makeStaticMethod(q{bool}, q{resolveInstanceMethod},`:`, q{SEL sel}));
+	}
 }));

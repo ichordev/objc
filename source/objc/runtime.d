@@ -485,12 +485,14 @@ Adds a new method to a class with a given name and implementation.
 Params:
 	cls = (nullable) The class to which to add a method.
 	name = (non-null) A selector that specifies the name of the method being added.
-	imp = (non-null) A function which is the implementation of the new method. The function must take at least two arguments—self and _cmd.
+	imp = (non-null) A function which is the implementation of the new method. The function must take at least two arguments: `self` and `_cmd`.
 	types = (nullable) An array of characters that describe the types of the arguments to the method.
 
 Returns: `true` if the method was added successfully, otherwise `false` (for example, the class already contains a method implementation with that name).
 
-Note: class_addMethod will add an override of a superclass's implementation, but will not replace an existing implementation in this class. To change an existing implementation, use method_setImplementation.
+Note: class_addMethod will add an override 
+of a superclass's implementation, but will not replace an existing implementation in this class.
+To change an existing implementation, use `method_setImplementation`.
 */
 extern(C) bool class_addMethod(Class cls, SEL name, IMP imp, const(char)* types) nothrow @nogc;
 
@@ -501,11 +503,14 @@ Params:
 	cls = (nullable) The class you want to modify.
 	name = (non-null) A selector that identifies the method whose implementation you want to replace.
 	imp = (non-null) The new implementation for the method identified by name for the class identified by cls.
-	types = (nullable) An array of characters that describe the types of the arguments to the method. Since the function must take at least two arguments—self and _cmd, the second and third characters must be “@:” (the first character is the return type).
+	types = (nullable) An array of characters that describe the types of the arguments to the method.
+		Since the function must take at least two arguments: `self` and `_cmd`, the second and third characters must be “@:” (the first character is the return type).
 
 Returns: (nullable) The previous implementation of the method identified by `name` for the class identified by `cls`.
 
-Note: This function behaves in two different ways: - If the method identified by `name` does not yet exist, it is added as if `class_addMethod` were called.   The type encoding specified by `types` is used as given. - If the method identified by `name` does exist, its `IMP` is replaced as if `method_setImplementation` were called.   The type encoding specified by `types` is ignored.
+Note: This function behaves in two different ways:
+	- If the method identified by `name` does not yet exist, it is added as if `class_addMethod` were called. The type encoding specified by `types` is used as given.
+	- If the method identified by `name` does exist, its `IMP` is replaced as if `method_setImplementation` were called. The type encoding specified by `types` is ignored.
 */
 extern(C) IMP class_replaceMethod(Class cls, SEL name, IMP imp, const(char)* types) nothrow @nogc;
 
@@ -598,7 +603,7 @@ Params:
 
 Returns: (nullable) An instance of the class `cls`.
 */
-extern(C) id class_createInstance(Class cls, size_t extraBytes) nothrow @nogc;
+extern(C) id class_createInstance(Class cls, size_t extraBytes=0) nothrow @nogc;
 
 
 //Adding Classes
@@ -614,10 +619,14 @@ Params:
 Returns: (nullable) The new class, or Nil if the class could not be created (for example, the desired name is already in use).
 
 Note: You can get a pointer to the new metaclass by calling `object_getClass`(newClass).
-Note: To create a new class, start by calling `objc_allocateClassPair`. Then set the class's attributes with functions like `class_addMethod` and `class_addIvar`. When you are done building the class, call `objc_registerClassPair`. The new class is now ready for use.
+
+Note: To create a new class, start by calling `objc_allocateClassPair`.
+Then set the class's attributes with functions like `class_addMethod` and `class_addIvar`.
+When you are done building the class, call `objc_registerClassPair`.The new class is now ready for use.
+
 Note: Instance methods and instance variables should be added to the class itself. Class methods should be added to the metaclass.
 */
-extern(C) Class objc_allocateClassPair(Class superclass, const(char)* name, size_t extraBytes) nothrow @nogc;
+extern(C) Class objc_allocateClassPair(Class superclass, const(char)* name, size_t extraBytes=0) nothrow @nogc;
 
 /**
 Registers a class that was allocated using `objc_allocateClassPair`.
@@ -711,7 +720,8 @@ Params:
 	m = (non-null) The method to inspect.
 	index = The index of the parameter to inspect.
 
-Returns: (nullable) A C string describing the type of the parameter at index `index`, or `null` if method has no parameter index `index`. You must free the string with `free`.
+Returns: (nullable) A C string describing the type of the parameter at index `index`, or `null` if method has no parameter index `index`.
+You must free the string with `free`.
 */
 extern(C) char* method_copyArgumentType(Method m, uint index) nothrow @nogc;
 
@@ -723,7 +733,8 @@ Params:
 	dst = (non-null) The reference string to store the description.
 	dst_len = The maximum number of characters that can be stored in `dst`.
 
-Note: The method's return type string is copied to `dst`. `dst` is filled as if `strncpy`(dst, parameter_type, dst_len) were called.
+Note: The method's return type string is copied to `dst`.
+	`dst` is filled as if `strncpy`(dst, parameter_type, dst_len) were called.
 */
 extern(C) void method_getReturnType(Method m, char* dst, size_t dst_len) nothrow @nogc;
 
@@ -736,7 +747,8 @@ Params:
 	dst = (nullable) The reference string to store the description.
 	dst_len = The maximum number of characters that can be stored in `dst`.
 
-Note: The parameter type string is copied to `dst`. `dst` is filled as if `strncpy`(dst, parameter_type, dst_len) were called. If the method contains no parameter with that index, `dst` is filled as if `strncpy`(dst, "", dst_len) were called.
+Note: The parameter type string is copied to `dst`. `dst` is filled as if `strncpy(dst, parameter_type, dst_len)` were called.
+If the method contains no parameter with that index, `dst` is filled as if `strncpy`(dst, "", dst_len) were called.
 */
 extern(C) void method_getArgumentType(Method m, uint index, char* dst, size_t dst_len) nothrow @nogc;
 
@@ -845,7 +857,7 @@ Params:
 	property = (non-null) The property whose attributes you want copied.
 	outCount = (nullable) The number of attributes returned in the array.
 
-Returns: (nullable) An array of property attributes; must be free'd() by the caller.
+Returns: (nullable) An array of property attributes; must be `free`'d by the caller.
 */
 extern(C) objc_property_attribute_t* property_copyAttributeList(objc_property_t property, uint* outCount) nothrow @nogc;
 
@@ -1458,7 +1470,7 @@ version(OSX_X86){
 }
 
 ///Type encoding characters
-enum{
+enum: char{
 	_C_ID          = '@',
 	_C_CLASS       = '#',
 	_C_SEL         = ':',
@@ -1494,7 +1506,7 @@ enum{
 }
 
 ///Modifiers
-enum{
+enum: char{
 	_C_COMPLEX      = 'j',
 	_C_ATOMIC       = 'A',
 	_C_CONST        = 'r',
@@ -1513,6 +1525,7 @@ SEL getSEL(const(char)* selector)() nothrow @nogc{
 	static SEL sel = null;
 	if(sel is null){
 		sel = sel_registerName(selector);
+		assert(sel !is null);
 	}
 	return sel;
 }
@@ -1521,6 +1534,7 @@ Class getClass(const(char)* name)() nothrow @nogc{
 	static Class class_ = null;
 	if(class_ is null){
 		class_ = objc_getClass(name);
+		assert(class_ !is null);
 	}
 	return class_;
 }
@@ -1529,6 +1543,7 @@ Protocol* getProtocol(const(char)* name)() nothrow @nogc{
 	static Protocol* protocol = null;
 	if(protocol is null){
 		protocol = objc_getProtocol(name);
+		assert(protocol !is null);
 	}
 	return protocol;
 }
